@@ -66,20 +66,23 @@ def main():
                 "-n", "htdemucs",
                 "-d", "cpu",
                 "--out", tmp,
-                "--filename-format", "{stem}.{ext}",
                 "--float32",
                 str(mix_path),
             ]
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=7200)
             if proc.returncode != 0:
                 raise RuntimeError(f"demucs failed: {proc.stderr[-2000:]}")
-            for stem in STEMS:
-                src = Path(tmp) / f"{stem}.wav"
-                if src.exists():
-                    import shutil
+            import shutil
 
-                    shutil.move(str(src), str(outdir / f"{stem}.wav"))
-                    print(f"stem {stem}.wav ready", flush=True)
+            found = 0
+            for p in sorted(Path(tmp).rglob("*.wav")):
+                stem_name = p.stem  # demucs writes <stem>.wav files
+                if stem_name in STEMS:
+                    shutil.move(str(p), str(outdir / f"{stem_name}.wav"))
+                    print(f"stem {stem_name}.wav ready", flush=True)
+                    found += 1
+            if found == 0:
+                raise RuntimeError("demucs produced no recognizable stems")
     print("done", flush=True)
 
 
