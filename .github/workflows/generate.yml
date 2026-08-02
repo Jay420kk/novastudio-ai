@@ -11,12 +11,17 @@ on:
         required: false
         default: '8'
         type: string
+      mode:
+        description: mix (one WAV) or beat (full mix + demucs stems)
+        required: false
+        default: 'mix'
+        type: string
 permissions:
   contents: read
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -24,23 +29,27 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Cache MusicGen model (10GB free Actions cache)
+      - name: Cache MusicGen + demucs models (10GB free Actions cache)
         uses: actions/cache@v4
         with:
-          path: ~/.cache/huggingface
+          path: |
+            ~/.cache/huggingface
+            ~/.cache/torch
           key: musicgen-small-v1
 
       - name: Install dependencies
         run: |
           pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
-          pip install --quiet transformers soundfile
+          pip install --quiet transformers soundfile demucs
 
       - name: Generate music
-        run: python tools/generate_cli.py "${{ inputs.prompt }}" "${{ inputs.seconds }}"
+        run: |
+          mkdir -p out
+          python tools/generate_cli.py "${{ inputs.prompt }}" "${{ inputs.seconds }}" --mode "${{ inputs.mode }}" -o out/generated.wav
 
-      - name: Upload WAV
+      - name: Upload WAVs
         uses: actions/upload-artifact@v4
         with:
           name: generated
-          path: generated.wav
+          path: out/
           retention-days: 7
