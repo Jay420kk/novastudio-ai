@@ -8,7 +8,12 @@ import numpy as np
 import torch
 from transformers import AutoProcessor, MusicgenForConditionalGeneration
 
-MODEL = "facebook/musicgen-small"
+MODELS = {
+    "small": "facebook/musicgen-small",
+    "medium": "facebook/musicgen-medium",
+    "stereo-medium": "facebook/musicgen-stereo-medium",
+    "large": "facebook/musicgen-large",
+}
 STEMS = ["drums", "bass", "other", "vocals"]
 
 
@@ -23,17 +28,25 @@ def main():
         default="mix",
         help="mix = one WAV; beat = full mix + demucs stems (drums/bass/other/vocals)",
     )
+    ap.add_argument(
+        "--model",
+        choices=list(MODELS),
+        default="small",
+        help="musicgen checkpoint (default: small — pick medium for quality on 16GB runners)",
+    )
     args = ap.parse_args()
 
     import soundfile as sf
+
+    model_name = MODELS[args.model]
 
     outdir = Path(args.out).parent if str(Path(args.out).parent) else Path(".")
     outdir.mkdir(parents=True, exist_ok=True)
     mix_path = outdir / "generated.wav"
 
-    print(f"loading {MODEL} ...", flush=True)
-    proc = AutoProcessor.from_pretrained(MODEL)
-    model = MusicgenForConditionalGeneration.from_pretrained(MODEL)
+    print(f"loading {model_name} ...", flush=True)
+    proc = AutoProcessor.from_pretrained(model_name)
+    model = MusicgenForConditionalGeneration.from_pretrained(model_name)
     model.eval()
 
     enc = getattr(model.config, "audio_encoder", None)

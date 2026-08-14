@@ -29,13 +29,23 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Resolve model
+        id: model
+        run: |
+          # beat needs memory for demucs -> small; mix can use medium (higher quality)
+          if [ "${{ inputs.mode }}" = "beat" ]; then
+            echo "model=small" >> "$GITHUB_OUTPUT"
+          else
+            echo "model=medium" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Cache MusicGen + demucs models (10GB free Actions cache)
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/huggingface
             ~/.cache/torch
-          key: musicgen-small-v2
+          key: musicgen-${{ steps.model.outputs.model }}-v2
 
       - name: Cache pip packages
         uses: actions/cache@v4
@@ -51,7 +61,7 @@ jobs:
       - name: Generate music
         run: |
           mkdir -p out
-          python tools/generate_cli.py "${{ inputs.prompt }}" "${{ inputs.seconds }}" --mode "${{ inputs.mode }}" -o out/generated.wav
+          python tools/generate_cli.py "${{ inputs.prompt }}" "${{ inputs.seconds }}" --mode "${{ inputs.mode }}" --model "${{ steps.model.outputs.model }}" -o out/generated.wav
 
       - name: Upload WAVs
         uses: actions/upload-artifact@v4
