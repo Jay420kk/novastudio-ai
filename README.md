@@ -65,17 +65,23 @@ Override with `AI_ENGINE=modal|kaggle|github`.
 Local CPU generation is disabled — if no remote lane is configured the job
 fails loudly instead of running on slow local hardware.
 
-## Free compute summary (research, 2026-08)
+## Free compute summary (research, 2026-08, cross-referenced)
 
-Verified free GPU/storage options — use what you need, skip the rest:
+Verified free options — use what you need, skip the rest:
 
-- **Modal** — $30/mo recurring credits, no card, ~50 T4-hrs/mo. Serverless HTTP
-  endpoints; the DAW calls it like any API. Best developer ergonomics.
-- **Kaggle** — 30 GPU-hr/wk guaranteed, P100 or 2×T4, 12h sessions. Reliable quota.
-- **Google Colab** — 15–30 GPU-hr/wk T4 (throttled). Official CLI (`colab run --gpu T4`).
-- **Lightning AI** — 80 GPU-hr/mo (phone verification), persistent VS Code workspace.
-- **GitHub Actions** — unlimited on public repos (4-core/16GB CPU); 2nd account
-  doubles concurrency (`GH_REPO=owner/a,owner/b` round-robins).
-- **Cloudflare R2** — 10GB free object storage, $0 egress, S3-compatible.
-- **TTS** — edge-tts / Kokoro / Piper: unlimited free neural voices, local/self-hosted.
+| Lane | Free allowance | Account? | Status |
+|------|----------------|----------|--------|
+| **GitHub Actions** | unlimited on public repos (4-core/16GB CPU) | GitHub (have) | ✅ working (mix + beat verified) |
+| **Modal** | $30/mo recurring (~50 T4-hrs) | Modal | code ready, not deployed |
+| **Kaggle** | 30 GPU-hr/wk (P100/2×T4) | Kaggle | code ready, needs kaggle.json |
+| **Colab** | 15–30 GPU-hr/wk T4 (throttled) | Google | not integrated |
+| **Lightning AI** | ~80 GPU-hr/mo | phone verify | not integrated |
+| **HF Inference API** | ❌ **dead** — musicgen no longer hosted; free tier is $0.10/mo credits | — | dropped |
+| **Cloudflare Workers AI** | 10k neurons/day (melotts TTS ≈ 537 min/day; Whisper; MiniMax Music 2.6 paid) | Cloudflare (have) | not integrated (needs API token) |
+| **Cloudflare R2** | 10GB storage, $0 egress | Cloudflare (have) | not integrated |
+
+- **TTS** — `edge-tts` (free Microsoft voices, no account): ✅ **implemented as the DAW "Voice" tab** (`server/ai/tts.py`, job type `tts`). Kokoro/Piper are local alternatives.
+- **Transcribe** — runs locally via cached `faster-whisper` (distil-large-v3, no account); HF hosted path kept only if `HF_TOKEN` set.
+
+Research notes: MusicGen weights are CC-BY-NC 4.0 (non-commercial); MiniMax Music 2.6 + ElevenLabs Music v2 exist on Cloudflare Workers AI (third-party, paid). Local CPU generation is disabled by design.
 
