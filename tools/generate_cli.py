@@ -60,7 +60,7 @@ def main():
             **proc(text=[args.prompt], padding=True, return_tensors="pt"),
             max_new_tokens=max_new,
         )
-    arr = audio[0].cpu().numpy()
+    arr = audio[0].cpu().float().numpy()
     if arr.ndim == 1:
         arr = np.stack([arr, arr], axis=1)
     elif arr.ndim == 2 and arr.shape[0] == 1:
