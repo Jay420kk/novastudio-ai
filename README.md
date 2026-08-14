@@ -60,8 +60,10 @@ gh run download <run-id> -n generated
 ```
 
 The DAW server (`daw/server/ai/generate.py`) picks Modal first when
-`MODAL_ENDPOINT` is set, then Kaggle, then GitHub Actions, then local.
-Override with `AI_ENGINE=modal|kaggle|github|local`.
+`MODAL_ENDPOINT` is set, then Kaggle, then GitHub Actions.
+Override with `AI_ENGINE=modal|kaggle|github`.
+Local CPU generation is disabled — if no remote lane is configured the job
+fails loudly instead of running on slow local hardware.
 
 ## Free compute summary (research, 2026-08)
 
