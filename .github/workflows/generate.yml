@@ -16,6 +16,11 @@ on:
         required: false
         default: 'mix'
         type: string
+      model:
+        description: 'small, medium, or stereo-medium (default: auto per mode)'
+        required: false
+        default: 'auto'
+        type: string
 permissions:
   contents: read
 jobs:
@@ -32,8 +37,11 @@ jobs:
       - name: Resolve model
         id: model
         run: |
-          # beat needs memory for demucs -> small; mix can use medium (higher quality)
-          if [ "${{ inputs.mode }}" = "beat" ]; then
+          # explicit model input wins; else beat needs memory for demucs -> small,
+          # mix can use medium (higher quality)
+          if [ -n "${{ inputs.model }}" ] && [ "${{ inputs.model }}" != "auto" ]; then
+            echo "model=${{ inputs.model }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ inputs.mode }}" = "beat" ]; then
             echo "model=small" >> "$GITHUB_OUTPUT"
           else
             echo "model=medium" >> "$GITHUB_OUTPUT"
