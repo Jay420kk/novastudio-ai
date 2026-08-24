@@ -36,12 +36,15 @@ jobs:
 
       - name: Resolve model
         id: model
+        env:
+          MODEL_INPUT: ${{ inputs.model }}
+          MODE_INPUT: ${{ inputs.mode }}
         run: |
           # explicit model input wins; else beat needs memory for demucs -> small,
           # mix can use medium (higher quality)
-          if [ -n "${{ inputs.model }}" ] && [ "${{ inputs.model }}" != "auto" ]; then
-            echo "model=${{ inputs.model }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ inputs.mode }}" = "beat" ]; then
+          if [ -n "$MODEL_INPUT" ] && [ "$MODEL_INPUT" != "auto" ]; then
+            echo "model=$MODEL_INPUT" >> "$GITHUB_OUTPUT"
+          elif [ "$MODE_INPUT" = "beat" ]; then
             echo "model=small" >> "$GITHUB_OUTPUT"
           else
             echo "model=medium" >> "$GITHUB_OUTPUT"
@@ -67,9 +70,13 @@ jobs:
           pip install --quiet transformers soundfile demucs
 
       - name: Generate music
+        env:
+          PROMPT: ${{ inputs.prompt }}
+          SECONDS_INPUT: ${{ inputs.seconds }}
+          MODE: ${{ inputs.mode }}
         run: |
           mkdir -p out
-          python tools/generate_cli.py "${{ inputs.prompt }}" "${{ inputs.seconds }}" --mode "${{ inputs.mode }}" --model "${{ steps.model.outputs.model }}" -o out/generated.wav
+          python tools/generate_cli.py "$PROMPT" "$SECONDS_INPUT" --mode "$MODE" --model "${{ steps.model.outputs.model }}" -o out/generated.wav
 
       - name: Upload WAVs
         uses: actions/upload-artifact@v4
